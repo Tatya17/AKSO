@@ -2,40 +2,40 @@ name: "tatya dan ilmin"
 
 services:
   nginx:
-    image: nginx:latest  # Menggunakan image resmi nginx
+    image: nginx:latest  
     container_name: nginx-service
     ports:
-      - "8080:80"  # Map port 80 di container ke port 8080 di host
+      - "8080:80"  
     volumes:
       - nginx_conf:/etc/nginx/
-      - html:/usr/share/nginx/html  # Menyertakan konfigurasi nginx khusus dari file lokal
-      - .:/app  # Menghubungkan direktori proyek dengan container untuk akses file statis
+      - html:/usr/share/nginx/html 
+      - .:/app
     networks:
       - app_network
     depends_on:
-      - webapp  # Menunggu sampai webapp service berjalan terlebih dahulu
+      - webapp
     restart: always
 
   webapp:
     container_name: webapp
     build:
-      context: ./app  # Membangun image dari direktori saat ini
-      dockerfile: Dockerfile  # Nama Dockerfile Anda
+      context: ./app  
+      dockerfile: Dockerfile 
     image: learning-hub:latest
     ports:
-      - "8000:8000"  # Map port 8000 di container ke port 8000 di host
+      - "8000:8000" 
     volumes:
-      - ./app:/app  # Menghubungkan direktori proyek dengan container
+      - ./app:/app 
     environment:
-      - PYTHONUNBUFFERED=1  # Mengatur environment variable untuk Python
+      - PYTHONUNBUFFERED=1 
     networks:
       - app_network
-    restart: always  # Agar container otomatis restart jika berhenti
+    restart: always 
     depends_on:
-      - db  # Pastikan db service (misalnya PostgreSQL atau MySQL) berjalan terlebih dahulu
+      - db 
 
   db:
-    image: postgres:latest  # Anda bisa ganti dengan database lain sesuai kebutuhan
+    image: postgres:latest  
     container_name: postgres-db
     environment:
       POSTGRES_USER: user
@@ -50,13 +50,13 @@ services:
     restart: always
 
   pgadmin:
-    image: dpage/pgadmin4:latest  # Menggunakan image pgAdmin yang resmi
+    image: dpage/pgadmin4:latest 
     container_name: pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Email default untuk login
-      PGADMIN_DEFAULT_PASSWORD: adminpassword  # Password untuk login pgAdmin
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  
+      PGADMIN_DEFAULT_PASSWORD: adminpassword 
     ports:
-      - "8082:80"  # Akses pgAdmin lewat port 8082
+      - "8082:80"  
     networks:
       - app_network
     depends_on:
