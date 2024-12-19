@@ -1,0 +1,80 @@
+name: "tatya dan ilmin"
+
+services:
+  nginx:
+    image: nginx:latest  # Menggunakan image resmi nginx
+    container_name: nginx-service
+    ports:
+      - "8080:80"  # Map port 80 di container ke port 8080 di host
+    volumes:
+      - nginx_conf:/etc/nginx/
+      - html:/usr/share/nginx/html  # Menyertakan konfigurasi nginx khusus dari file lokal
+      - .:/app  # Menghubungkan direktori proyek dengan container untuk akses file statis
+    networks:
+      - app_network
+    depends_on:
+      - webapp  # Menunggu sampai webapp service berjalan terlebih dahulu
+    restart: always
+
+  webapp:
+    container_name: webapp
+    build:
+      context: ./app  # Membangun image dari direktori saat ini
+      dockerfile: Dockerfile  # Nama Dockerfile Anda
+    image: learning-hub:latest
+    ports:
+      - "8000:8000"  # Map port 8000 di container ke port 8000 di host
+    volumes:
+      - ./app:/app  # Menghubungkan direktori proyek dengan container
+    environment:
+      - PYTHONUNBUFFERED=1  # Mengatur environment variable untuk Python
+    networks:
+      - app_network
+    restart: always  # Agar container otomatis restart jika berhenti
+    depends_on:
+      - db  # Pastikan db service (misalnya PostgreSQL atau MySQL) berjalan terlebih dahulu
+
+  db:
+    image: postgres:latest  # Anda bisa ganti dengan database lain sesuai kebutuhan
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4:latest  # Menggunakan image pgAdmin yang resmi
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Email default untuk login
+      PGADMIN_DEFAULT_PASSWORD: adminpassword  # Password untuk login pgAdmin
+    ports:
+      - "8082:80"  # Akses pgAdmin lewat port 8082
+    networks:
+      - app_network
+    depends_on:
+      - db
+    restart: always
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+  nginx_conf:
+    driver: local
+  html:
+    driver: local
+
+configs:
+  nginx_config:
+    file: ./nginx.conf
